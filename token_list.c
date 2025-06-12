@@ -19,7 +19,7 @@ typedef enum {
     READING_TOKEN,
     READING_STRING,
     END_OF_STRING,
-    ESCAPE,
+    ESCAPE
 } fsm_state;
 
 /*
