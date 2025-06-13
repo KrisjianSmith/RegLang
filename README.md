@@ -44,26 +44,29 @@ Expressions cannot be cyclic, meaning that no expression can include
 itself   
 
 ### Keywords
+
+```
     followed
-        by
-        repeated
-        or
-        more
-        times
-        from
-        to
-        optional
-        character
-        between
-        and
-        not
-        the
-        set
-        newline
-        tab
-        any
-  
-### Context Free Grammar representation of the syntaxa
+    by
+    repeated
+    or
+    more
+    times
+    from
+    to
+    optional
+    character
+    between
+    and
+    not
+    the
+    set
+    newline
+    tab
+    any
+```
+
+### Context Free Grammar representation of the syntax
 ```
         file:       [assignment]+
 
@@ -113,7 +116,9 @@ The following RegLang expression:
         digit:      a character between '0' and '9';
         decimal:    '.' followed by ( [digit] repeated 1 or more times );
 ```
-    would compile into the following regex:
+
+would compile into the following regex:
+
 ```     
         0|-?([1-9][0-9]*)(.[0-9]*)?
 ```
@@ -123,10 +128,11 @@ The following RegLang expression:
 RegLang, like many other compilers, uses a pipeline architecture.
 
 ### Basic steps:
-    1. Tokenize file
-    2. use CFG to build a parse tree of the regular expression
-    3. Begin substituting expressions for their regex counterparts.
-    4. Print regex to standard output
+
+1. Tokenize file
+2. use CFG to build a parse tree of the regular expression
+3. Begin substituting expressions for their regex counterparts.
+4. Print regex to standard output
 
 ### Objects used:
     
