@@ -68,10 +68,34 @@ itself
 ```
 
 ### Context Free Grammar representation of the syntax
+
 ```
         file:       [assignment]+
 
-        assignment: [identifier]: [expression] ; [newline]
+        assignment: [identifier]: [expression] ;
+        
+        expression: [expr_start]
+                    [expr_start] or [expresion]
+                    [expr_start] followed by [expression]
+                    [expr_start] repeated 0 or more times
+                    optional [expression]
+
+        expr_start: [string]
+                    [ [identifier] ]
+                    ( [expression] )
+
+        string:     " .* " (any amount of any character surrounded by quotes)
+
+        identifier: [a-zA-Z_] [a-zA-Z0-9_]+ (but not one of the keywords in the above list)
+```
+
+
+
+### Planned CFG - Not all CFG elements are implemented yet
+```
+        file:       [assignment]+
+
+        assignment: [identifier]: [expression] ;
         
         expression: [expr_start]
                     [expr_start] followed by [expression]

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "token_list.h"
+#include "parse_tree.h"
 
 /*
     The entry point of the program. Right now, it only runs a short test
