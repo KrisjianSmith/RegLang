@@ -1,4 +1,5 @@
 #include "token_list.h"
+#include <stdbool.h>
 #define TOKEN_LIST_STARTING_CAPACITY 10
 
 /*
@@ -19,14 +20,44 @@ typedef enum {
     READING_TOKEN,
     READING_STRING,
     END_OF_STRING,
-    ESCAPE
+    ESCAPE,
+    AFTER_SINGLE_CHAR_TOKEN
 } fsm_state;
 
 /*
     Returns true if the given character is whitespace
  */
-int is_whitespace(char c) {
-    return c == ' ' || c == '\n' || c == '\t' || c == '\r';
+bool is_whitespace(char c) {
+    switch (c) {
+        case ' ':
+        case '\n':
+        case '\t':
+        case '\r':
+            return true;
+            break;
+        default:
+            return false; 
+    }
+}
+
+/*
+    Returns true if the given character represents a single character token.
+    These tokens need to be handled separately, as they are allowed to exist
+    without surrounding whitespace, unlike other tokens
+ */
+bool is_single_char_token(char c) {
+    switch (c) {
+        case '[':
+        case ']':
+        case '(':
+        case ')':
+        case ':':
+        case ';':
+            return true;
+            break;
+        default:
+            return false;
+    }
 }
 
 
@@ -37,6 +68,72 @@ int is_whitespace(char c) {
 void fail(char *msg) {
     fprintf(stderr, "FATAL ERROR: %s\n", msg);
     exit(1);
+}
+
+/*
+    Returns the enumeration for the type of keyword provided.
+    If the given string is not a keyword, then NOT_A_KEYWORD will
+    be returned
+
+    str - The string to get the enumeration of
+    Returns the keyword_type enumeration of the given keyword
+ */
+keyword_type get_keyword_type(const char *str) {
+    
+    // List of all keywords
+    char keywords[][16] = {
+        "followed",
+        "by",
+        "repeated",
+        "or",
+        "more",
+        "times",
+        "from",
+        "to",
+        "optional",
+        "character",
+        "between",
+        "and",
+        "not",
+        "the",
+        "set",
+        "newline",
+        "tab",
+        "any" 
+    };
+    
+    // List of all corresponding keyword enumeration values
+    keyword_type types[] = {
+        KEYWORD_FOLLOWED,
+        KEYWORD_BY,
+        KEYWORD_REPEATED,
+        KEYWORD_OR,
+        KEYWORD_MORE,
+        KEYWORD_TIMES,
+        KEYWORD_FROM,
+        KEYWORD_TO,
+        KEYWORD_OPTIONAL,
+        KEYWORD_CHARACTER,
+        KEYWORD_BETWEEN,
+        KEYWORD_AND,
+        KEYWORD_NOT,
+        KEYWORD_THE,
+        KEYWORD_SET,
+        KEYWORD_NEWLINE,
+        KEYWORD_TAB,
+        KEYWORD_ANY
+    };
+    
+    // Iterate through the keywords. If a match is found, return
+    // that value
+    for (int i = 0; i < NUMBER_OF_KEYWORDS; i++) {
+        if (strcmp(str, keywords[i]) == 0) {
+            return types[i];
+        }
+    }
+    
+    // If no match is found, return NOT_A_KEYWORD 
+    return NOT_A_KEYWORD;
 }
 
 /*
@@ -55,13 +152,20 @@ void add_string(token_list *list, const char *str, int len) {
     // If there is no more space in the array, double it's size
     if (list->len == list->capacity) {
         list->capacity *= 2;
-        list->tokens = (char **)realloc(list->tokens, sizeof(char *) * list->capacity);
+        list->tokens = (token *)realloc(list->tokens, sizeof(token) * list->capacity);
     }
+    
+    // Get the reference to the next token
+    token *t = list->tokens + list->len;
+    
+    // Allocate space for the token's string and copy the contents
+    t->str = (char *)malloc(sizeof(char) * (len + 1));
+    strncpy(t->str, str, len);
+    t->str[len] = '\0';
+    t->len = len;
+    t->type = get_keyword_type(str);
 
-    // Add the token to the list
-    list->tokens[list->len] = (char *)malloc(sizeof(char) * (len + 1));
-    strncpy(list->tokens[list->len], str, len);
-    list->tokens[list->len][len] = '\0';
+    // Update the length of the token list
     list->len++;
 }
 
@@ -73,7 +177,7 @@ void destroy_token_list(token_list* list) {
     
     // Free the tokens
     for (int i = 0; i < list->len; i++) {
-        free(list->tokens[i]);
+        free(list->tokens[i].str);
     }
 
     // Free the list
@@ -111,7 +215,7 @@ token_list *tokenize(const char *str) {
     token_list *list = (token_list *)malloc(sizeof(token_list));
     list->capacity = 10;
     list->len = 0;
-    list->tokens = (char **)malloc(sizeof(char *) * list->capacity);
+    list->tokens = (token *)malloc(sizeof(token) * list->capacity);
 
     // Start from the beginning of the string and go to the end
     int index = 0;
@@ -135,6 +239,13 @@ token_list *tokenize(const char *str) {
                     break;
                 }
 
+                // If we find a single character token, record it and move on
+                if (is_single_char_token(str[index])) {
+                    add_string(list, &str[index], 1);
+                    state = AFTER_SINGLE_CHAR_TOKEN;
+                    break;
+                }
+
                 // If the next character is not whitespace, record this as the
                 // starting index
                 starting_index = index;
@@ -153,7 +264,23 @@ token_list *tokenize(const char *str) {
 
             case READING_TOKEN:
                 
-                // If we see any non-whitespace character, keep reading the string
+                // If we found a single character token, record the previous token and
+                // the single character token in the list
+                if (is_single_char_token(str[index])) {
+
+                    // Add the token to the list
+                    int len = index - starting_index;
+                    add_string(list, &str[starting_index], len);
+
+                    // Add the single character token to the list
+                    add_string(list, &str[index], 1);
+
+                    // Set the state and move on
+                    state = AFTER_SINGLE_CHAR_TOKEN;
+                    break;
+                }
+
+                // If we see any non-whitespace character, keep reading the token
                 if (!is_whitespace(str[index])) {
                     break; 
                 } 
@@ -194,21 +321,14 @@ token_list *tokenize(const char *str) {
 
             case ESCAPE:
 
-                // If there is another slash, stay in this state
-                if (str[index] == '\\') {
-                    break;
-                }
-
-                // Otherwise, move back to the reading string state
-                else {
-                    state = READING_STRING;   
-                }
+                // Ignore this character and move back to the reading string state
+                state = READING_STRING;   
             break;
 
             case END_OF_STRING:
                 
-                // If a string just ended, there must be whitespace after it. Otherwise,
-                // the input string is invalid.
+                // If a string just ended, there must be whitespace or a single character
+                // token after it. Otherwise, the input string is invalid.
                 if (is_whitespace(str[index])) {
                     
                     // Add the string to the list of tokens
@@ -216,10 +336,52 @@ token_list *tokenize(const char *str) {
                     add_string(list, &str[starting_index], len);
                     state = SKIPPING_WHITESPACE;
                 }
+                else if (is_single_char_token(str[index])) {
+                     
+                    // Add the string to the list of tokens
+                    int len = index - starting_index;
+                    add_string(list, &str[starting_index], len);
+                    
+                    // Add the single character token
+                    add_string(list, &str[index], 1);
+                    state = AFTER_SINGLE_CHAR_TOKEN;
+                }
                 else {
                     destroy_token_list(list);
                     fail("Improperly formatted input. Quoted string ended with no whitespace after it.");
                 }
+            break;
+
+            case AFTER_SINGLE_CHAR_TOKEN:
+                
+                // If there is whitespace, ignore it
+                if (is_whitespace(str[index])) {
+                    state = SKIPPING_WHITESPACE;
+                    break;
+                }
+
+                // If there is a quote, start reading the string
+                if (str[index] == '\"') {
+                    starting_index = index;
+                    state = READING_STRING;
+                    break;
+                }
+
+                // If there is another single character token, record it
+                if (is_single_char_token(str[index])) {
+                    add_string(list, &str[index], 1);
+                    state = AFTER_SINGLE_CHAR_TOKEN;
+                    break;
+                }
+
+                // Any other character means we need to start reading the next token
+                starting_index = index;
+                state = READING_TOKEN;
+            break;
+            
+            // This should never be reached. If it is, something went seriously wrong.
+            default:
+                fail("Unexpected state in tokenizer FSM");
             break;
 
         }
@@ -230,9 +392,9 @@ token_list *tokenize(const char *str) {
     // After the input has been read, we may still have one leftover token
     // that hasn't been processed yet.
 
-    // If we were reading whitespace, then this token doesn't exist and we can
-    // return immediately
-    if (state == SKIPPING_WHITESPACE) {
+    // If we were reading whitespace or had just read a single character token,
+    // then this token doesn't exist and we can return immediately
+    if (state == SKIPPING_WHITESPACE || state == AFTER_SINGLE_CHAR_TOKEN) {
         return list;
     }
 
@@ -260,6 +422,7 @@ void print_token_list(token_list *list) {
     printf("Length: %d\nCapacity: %d\nTokens:\n", list->len, list->capacity);
 
     for (int i = 0; i < list->len; i++) {
-        printf("    [%s]\n", list->tokens[i]);
+        token token = list->tokens[i];
+        printf("    len: %d, type: %d, str: [%s]\n", token.len, token.type, token.str);
     }
 }

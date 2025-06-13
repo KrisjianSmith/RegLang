@@ -8,9 +8,16 @@
  */
 int main(int argc, char **argv) {
     
-    char *test_str = "This is a \"test of\" my \"scanner that \\\"I wrote\\\" for this project\" test test test this is a long test to make sure that the doubling of capacity works as expected";
+    // Check for proper arguments
+    if (argc != 2) {
+        printf("Usage: RegLang [string to tokenize]\n");
+        return 1;
+    }
 
-    token_list *list = tokenize(test_str);
+    printf("Tokenizing string:\n    %s\n", argv[1]);
+
+    // Try to tokenize the first input
+    token_list *list = tokenize(argv[1]);
     
     print_token_list(list); 
 

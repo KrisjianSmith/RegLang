@@ -33,6 +33,53 @@
 #include <stdio.h>
 
 /*
+    The type of keyword that a token is. This will be used later
+    in the compilation process to prevent having to do costly
+    string comparisons
+ */
+typedef enum { 
+    NOT_A_KEYWORD,
+    KEYWORD_FOLLOWED,
+    KEYWORD_BY,
+    KEYWORD_REPEATED,
+    KEYWORD_OR,
+    KEYWORD_MORE,
+    KEYWORD_TIMES,
+    KEYWORD_FROM,
+    KEYWORD_TO,
+    KEYWORD_OPTIONAL,
+    KEYWORD_CHARACTER,
+    KEYWORD_BETWEEN,
+    KEYWORD_AND,
+    KEYWORD_NOT,
+    KEYWORD_THE,
+    KEYWORD_SET,
+    KEYWORD_NEWLINE,
+    KEYWORD_TAB,
+    KEYWORD_ANY
+} keyword_type;
+
+// The number of keywords in the above enumeration
+#define NUMBER_OF_KEYWORDS 18
+
+/*
+    Struct to represent a token
+ */
+typedef struct {
+    
+    // The string representation of this token
+    char *str;
+    
+    // The keyword, or NOT_A_KEYWORD if not a keyword
+    keyword_type type;
+    
+    // The length of the string representation, excluding null terminators
+    int len;
+
+} token;
+
+
+/*
     Struct that represents a list of tokens.
  */
 typedef struct {
@@ -44,7 +91,7 @@ typedef struct {
     int capacity;
 
     // The list of tokens itself
-    char **tokens;
+    token *tokens;
 } token_list;
 
 /*
