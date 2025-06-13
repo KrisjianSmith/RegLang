@@ -5,15 +5,15 @@
 ## A simple language that complies into a regular expression
 
 Regular expressions, commonly called regex, are one of the most useful tools in
-a programmer's toolbelt. They are quick and easy to write, and they are widely
-supported. However, regex has one huge problem: maintainability. Regexes are
-difficult to read or modify, meaning that if you want to change an existing
-regex, you may be better off simply rewriting it from scratch.
+a programmer's toolbelt. They are quick and easy to write and they are widely
+supported in modern programming langues. However, regex has a huge problem:
+maintainability. Regexes are difficult to read and modify, meaning that if you want to
+change an existing regex, you may be better off simply rewriting it from scratch.
 
 This mirrors a problem in computer science that was solved long ago. Assembly language
 is similar to regex in the fact that it's relatively simple to write, but diffiult to
 read and maintain. We solved this problem by developing higer level languages and tools
-to compile higher level languages into assembly, so why can't we solve the regex problem
+to compile these languages into assembly, so why can't we solve the regex problem
 the same way?
 
 The goal of this project is to develop a higher-level language that will compile into
@@ -28,7 +28,8 @@ a regular expression. This has several benefits:
     feature is not yet implemented.
 3.  Backwards compatibility - Since RegLang compiles into the regex notation that is already
     supported, using RegLang in your project should be plug-and-play. Simply write your regex
-    using the RegLang syntax, compile it, and copy/paste it right where your old regex was
+    using the RegLang syntax, compile it, and copy/paste it right where your old regex was; no
+    need to import additional tools or modify any of your projects configurations.
 
 It should be stated that this project is heavily inspired by the Rosie Pattern Language, developed by
 Dr. Jamie Jennings of North Carolina State University. I had the pleasure of working on this project
@@ -129,9 +130,9 @@ RegLang, like many other compilers, uses a pipeline architecture.
 
 ### Basic steps:
 
-1. Tokenize file
+1. Tokenize the RegLang expression
 2. use CFG to build a parse tree of the regular expression
-3. Begin substituting expressions for their regex counterparts.
+3. Begin substituting nodes in the parse tree for their regex counterparts.
 4. Print regex to standard output
 
 ### Objects used:
