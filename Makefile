@@ -12,5 +12,14 @@ token_list.o: token_list.c token_list.h
 main.o:	main.c token_list.h parse_tree.h
 	gcc ${FLAGS} -c main.c
 
+token_list_test.o: token_list_test.c token_list_test.h token_list.h
+	gcc ${FLAGS} -c token_list_test.c
+
+reglang_test.o: reglang_test.c token_list_test.h
+	gcc ${FLAGS} -c reglang_test.c
+
+test: reglang_test.o token_list_test.o token_list.o
+	gcc ${FLAGS} reglang_test.o token_list_test.o token_list.o -o RegLangTest
+
 clean:
-	rm -f *.o RegLang
+	rm -f *.o RegLang RegLangTest

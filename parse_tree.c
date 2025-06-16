@@ -57,7 +57,7 @@ bool is_string(token_list *list, int starting_index) {
 bool is_identifier(token_list *list, int starting_index) {
     
     // If the token is a keyword, then it cannot be an identifier
-    if (list[starting_index].type != NOT_A_KEYWORD) {
+    if (list->tokens[starting_index].type != NOT_A_KEYWORD) {
         return false;
     }
 
@@ -66,8 +66,8 @@ bool is_identifier(token_list *list, int starting_index) {
     int len = list->tokens[starting_index].len;   
 
     // The first character must be a letter or underscore
-    if ( !( 'a' <= str[0] && str[0] <= 'z' ||
-            'A' <= str[0] && str[0] <= 'Z' ||
+    if ( !( ('a' <= str[0] && str[0] <= 'z') ||
+            ('A' <= str[0] && str[0] <= 'Z') ||
             str[0] == '_')
           ) {
         return false;
@@ -75,9 +75,9 @@ bool is_identifier(token_list *list, int starting_index) {
 
     // All other characters must be alphanumeric
     for (int i = 1; i < len; i++) {
-        if ( !( 'a' <= str[0] && str[0] <= 'z' ||
-                'A' <= str[0] && str[0] <= 'Z' ||
-                '0' <= str[0] && str[0] <= '9' ||
+        if ( !( ('a' <= str[0] && str[0] <= 'z') ||
+                ('A' <= str[0] && str[0] <= 'Z') ||
+                ('0' <= str[0] && str[0] <= '9') ||
                 str[0] == '_')
               ) {
             return false;
