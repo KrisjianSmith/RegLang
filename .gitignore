@@ -1,2 +1,4 @@
 RegLang
+RegLangTest
 *.o
+*.swp

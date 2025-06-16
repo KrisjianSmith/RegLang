@@ -1,0 +1,114 @@
+#include "parse_tree.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+
+/*
+    parse_tree.h
+    Krisjian Smith
+    6/13/2025
+
+    The parse tree is the representation of a RegLang expression built by interpreting
+    the token list using a context free grammer.
+ */
+
+/*
+    Returns a parse tree node representing the file if the given token list represents
+    a valid RegLang file, or NULL otherwise
+ */
+parse_tree_node *get_file(token_list *list, int *starting_index) {
+    return NULL;
+}
+
+/*
+    Returns a parse tree node representing the next expression
+    in the token list, if one exists, or NULL otherwise
+ */
+parse_tree_node *get_assignment(token_list *list, int *starting_index) {
+    return NULL;
+}
+/*
+    Returns true if the given token list represents a valid expression
+ */
+parse_tree_node *get_expression(token_list *list, int *starting_index) {
+    return false;
+}
+/*
+    Returns true if the given token list represents a valid expr_start
+ */
+parse_tree_node *get_expr_start(token_list *list, int *starting_index) {
+    return false;
+}
+/*
+    Returns true if the given token list represents a valid string
+ */
+bool is_string(token_list *list, int starting_index) {
+
+    // Get the next token's string representation
+    char *str = list->tokens[starting_index].str;
+    int len = list->tokens[starting_index].len;
+
+    return (str[0] == '\"' && str[len - 1] == '\"');
+}
+
+/*
+    Returns true if the given token list represents a valid identifier
+ */
+bool is_identifier(token_list *list, int starting_index) {
+    
+    // If the token is a keyword, then it cannot be an identifier
+    if (list->tokens[starting_index].type != NOT_A_KEYWORD) {
+        return false;
+    }
+
+    // Get the next token's string representation
+    char *str = list->tokens[starting_index].str;
+    int len = list->tokens[starting_index].len;   
+
+    // The first character must be a letter or underscore
+    if ( !( ('a' <= str[0] && str[0] <= 'z') ||
+            ('A' <= str[0] && str[0] <= 'Z') ||
+            str[0] == '_')
+          ) {
+        return false;
+    }
+
+    // All other characters must be alphanumeric
+    for (int i = 1; i < len; i++) {
+        if ( !( ('a' <= str[0] && str[0] <= 'z') ||
+                ('A' <= str[0] && str[0] <= 'Z') ||
+                ('0' <= str[0] && str[0] <= '9') ||
+                str[0] == '_')
+              ) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+/*
+    Creates a parse tree from the given token list. The caller must eventually
+    destroy the parse tree with the destroy_parse_tree function to free its memory.
+ */
+parse_tree *create_parse_tree(token_list *list) {
+    
+    return NULL;
+}
+
+/*
+    Destroys the given parse tree, freeing all memory in the process. Note that this
+    does NOT destroy the memory of the token list usd to create it, that must be
+    destroyed with the destroy_token_list method defined in the token_list.h file.
+ */
+void destroy_parse_tree(parse_tree *tree) {
+    // TODO: this
+}
+
+/*
+    Turns the given parse tree into its regex representation
+ */
+char *to_regex(parse_tree *tree) {
+    return NULL;
+}

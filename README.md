@@ -36,6 +36,17 @@ Dr. Jamie Jennings of North Carolina State University. I had the pleasure of wor
 as an undergraduate research project. If you would like a more functional version of this project,
 I highly encourage you to check out Rosie at https://rosie-lang.org/.
 
+## How to use RegLang
+
+As of right now, RegLang is very early in development. All that is properly implemented so far is the tokenizer.
+
+To build the project, simply close this repository and run `make`. This will build the project. Then, simply
+run `./RegLang expression`. This will tokenize the expression and print it back to standard output for
+testing purposes.
+
+To run unit tests, run `make test` and then `./RegLangTests`. This will execute a suite of unit tests and
+output their results in the console window.
+
 ## Syntax
  
 The first assignment in the file represents the final
@@ -68,10 +79,34 @@ itself
 ```
 
 ### Context Free Grammar representation of the syntax
+
 ```
         file:       [assignment]+
 
-        assignment: [identifier]: [expression] ; [newline]
+        assignment: [identifier]: [expression] ;
+        
+        expression: [expr_start]
+                    [expr_start] or [expresion]
+                    [expr_start] followed by [expression]
+                    [expr_start] repeated 0 or more times
+                    optional [expression]
+
+        expr_start: [string]
+                    [ [identifier] ]
+                    ( [expression] )
+
+        string:     " .* " (any amount of any character surrounded by quotes)
+
+        identifier: [a-zA-Z_] [a-zA-Z0-9_]+ (but not one of the keywords in the above list)
+```
+
+
+
+### Planned CFG - Not all CFG elements are implemented yet
+```
+        file:       [assignment]+
+
+        assignment: [identifier]: [expression] ;
         
         expression: [expr_start]
                     [expr_start] followed by [expression]

@@ -62,12 +62,11 @@ bool is_single_char_token(char c) {
 
 
 /*
-    Exit unsucessfully and print the given message to
+    Print the given message to
     standard error
  */
 void fail(char *msg) {
     fprintf(stderr, "FATAL ERROR: %s\n", msg);
-    exit(1);
 }
 
 /*
@@ -76,9 +75,11 @@ void fail(char *msg) {
     be returned
 
     str - The string to get the enumeration of
+    len - The length of the string. This is necessary because this string is a substring of
+          the entire RegLang expression, meaning that it is not null terminated.
     Returns the keyword_type enumeration of the given keyword
  */
-keyword_type get_keyword_type(const char *str) {
+keyword_type get_keyword_type(const char *str, int len) {
     
     // List of all keywords
     char keywords[][16] = {
@@ -127,7 +128,7 @@ keyword_type get_keyword_type(const char *str) {
     // Iterate through the keywords. If a match is found, return
     // that value
     for (int i = 0; i < NUMBER_OF_KEYWORDS; i++) {
-        if (strcmp(str, keywords[i]) == 0) {
+        if (strlen(keywords[i]) == len && strncmp(str, keywords[i], len) == 0) {
             return types[i];
         }
     }
@@ -163,7 +164,7 @@ void add_string(token_list *list, const char *str, int len) {
     strncpy(t->str, str, len);
     t->str[len] = '\0';
     t->len = len;
-    t->type = get_keyword_type(str);
+    t->type = get_keyword_type(str, len);
 
     // Update the length of the token list
     list->len++;
@@ -349,6 +350,7 @@ token_list *tokenize(const char *str) {
                 else {
                     destroy_token_list(list);
                     fail("Improperly formatted input. Quoted string ended with no whitespace after it.");
+                    return NULL;
                 }
             break;
 
@@ -382,6 +384,7 @@ token_list *tokenize(const char *str) {
             // This should never be reached. If it is, something went seriously wrong.
             default:
                 fail("Unexpected state in tokenizer FSM");
+                return NULL;
             break;
 
         }
@@ -422,7 +425,7 @@ void print_token_list(token_list *list) {
     printf("Length: %d\nCapacity: %d\nTokens:\n", list->len, list->capacity);
 
     for (int i = 0; i < list->len; i++) {
-        token token = list->tokens[i];
-        printf("    len: %d, type: %d, str: [%s]\n", token.len, token.type, token.str);
+        token t = list->tokens[i];
+        printf("    len: %d, type: %d, str: [%s]\n", t.len, t.type, t.str);
     }
 }
