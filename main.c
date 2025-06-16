@@ -19,6 +19,11 @@ int main(int argc, char **argv) {
 
     // Try to tokenize the first input
     token_list *list = tokenize(argv[1]);
+
+    // If the tokenizer failed, exit unsuccessfully
+    if (list == NULL) {
+        return 1;
+    }
     
     print_token_list(list); 
 

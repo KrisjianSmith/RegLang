@@ -128,7 +128,7 @@ keyword_type get_keyword_type(const char *str, int len) {
     // Iterate through the keywords. If a match is found, return
     // that value
     for (int i = 0; i < NUMBER_OF_KEYWORDS; i++) {
-        if (strncmp(str, keywords[i], len) == 0) {
+        if (strlen(keywords[i]) == len && strncmp(str, keywords[i], len) == 0) {
             return types[i];
         }
     }

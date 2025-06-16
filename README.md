@@ -36,6 +36,17 @@ Dr. Jamie Jennings of North Carolina State University. I had the pleasure of wor
 as an undergraduate research project. If you would like a more functional version of this project,
 I highly encourage you to check out Rosie at https://rosie-lang.org/.
 
+## How to use RegLang
+
+As of right now, RegLang is very early in development. All that is properly implemented so far is the tokenizer.
+
+To build the project, simply close this repository and run `make`. This will build the project. Then, simply
+run `./RegLang expression`. This will tokenize the expression and print it back to standard output for
+testing purposes.
+
+To run unit tests, run `make test` and then `./RegLangTests`. This will execute a suite of unit tests and
+output their results in the console window.
+
 ## Syntax
  
 The first assignment in the file represents the final
