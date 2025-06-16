@@ -62,12 +62,11 @@ bool is_single_char_token(char c) {
 
 
 /*
-    Exit unsucessfully and print the given message to
+    Print the given message to
     standard error
  */
 void fail(char *msg) {
     fprintf(stderr, "FATAL ERROR: %s\n", msg);
-    exit(1);
 }
 
 /*
@@ -351,6 +350,7 @@ token_list *tokenize(const char *str) {
                 else {
                     destroy_token_list(list);
                     fail("Improperly formatted input. Quoted string ended with no whitespace after it.");
+                    return NULL;
                 }
             break;
 
@@ -384,6 +384,7 @@ token_list *tokenize(const char *str) {
             // This should never be reached. If it is, something went seriously wrong.
             default:
                 fail("Unexpected state in tokenizer FSM");
+                return NULL;
             break;
 
         }

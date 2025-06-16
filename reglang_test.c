@@ -15,15 +15,15 @@ int main() {
     
     // Run all tests
     int failed_tests = 0;
-    int passed_tests = 0;
+    int run_tests = 0;
     printf("STARTING REGLANG TESTS\n");
     
     // Run tests for token_list.h
-    run_token_list_tests(&failed_tests, &passed_tests);
+    run_token_list_tests(&failed_tests, &run_tests);
     
     // Output total passed and failed tests
-    printf("\n--------------------\nTOTAL FAILED TESTS: %d\nTOTAL PASSED TESTS: %d\n",
-        failed_tests, passed_tests);
+    printf("\n--------------------\nTOTAL FAILED TESTS: %d\nTOTAL TESTS RUN: %d\n",
+        failed_tests, run_tests);
 
     return 0;
 }
