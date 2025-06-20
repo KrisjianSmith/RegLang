@@ -56,10 +56,10 @@ void test_keywords(int *failing, int *run) {
     // Make sure keywords are identified correctly
     token_list *result = tokenize("followed by repeated \t\t \n and or more times from to optional"
                       " \t\t\r\r\r\n\t     \r\t  character\n\n\n "
-                      "between and not the set newline tab any \"quoted string\"    \"and\" a  \n");
+                      "between and not the set newline tab any \"quoted string\"    \"and\" a 2 \n");
     
     // Make sure all tokens are created as expected
-    ASSERT(result->len == 22);
+    ASSERT(result->len == 23);
     ASSERT(result->capacity == 40);
     ASSERT_TOKEN_EQUALS(result->tokens[ 0], "followed",          KEYWORD_FOLLOWED,  8);
     ASSERT_TOKEN_EQUALS(result->tokens[ 1], "by",                KEYWORD_BY,        2);
@@ -80,9 +80,10 @@ void test_keywords(int *failing, int *run) {
     ASSERT_TOKEN_EQUALS(result->tokens[16], "newline",           KEYWORD_NEWLINE,   7);
     ASSERT_TOKEN_EQUALS(result->tokens[17], "tab",               KEYWORD_TAB,       3);
     ASSERT_TOKEN_EQUALS(result->tokens[18], "any",               KEYWORD_ANY,       3);
-    ASSERT_TOKEN_EQUALS(result->tokens[19], "\"quoted string\"", NOT_A_KEYWORD,    15);
-    ASSERT_TOKEN_EQUALS(result->tokens[20], "\"and\"",           NOT_A_KEYWORD,     5);
-    ASSERT_TOKEN_EQUALS(result->tokens[21], "a",                 NOT_A_KEYWORD,     1);
+    ASSERT_TOKEN_EQUALS(result->tokens[19], "quoted string",     LITERAL_STRING,   13);
+    ASSERT_TOKEN_EQUALS(result->tokens[20], "and",               LITERAL_STRING,    3);
+    ASSERT_TOKEN_EQUALS(result->tokens[21], "a",                 IDENTIFIER,        1);
+    ASSERT_TOKEN_EQUALS(result->tokens[22], "2",                 UNKNOWN_TOKEN,     1);
 
     destroy_token_list(result);
 }
@@ -109,20 +110,20 @@ void test_tokenize(int *failing, int *run) {
     // Make sure all tokens are created as expected
     ASSERT(result->len == 14);
     ASSERT(result->capacity == 20);
-    ASSERT_TOKEN_EQUALS(result->tokens[ 0], "a",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[ 1], "b",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[ 2], "c",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[ 3], "[",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[ 4], "def", NOT_A_KEYWORD, 3);
-    ASSERT_TOKEN_EQUALS(result->tokens[ 5], "]",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[ 6], "(",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[ 7], "gh",  NOT_A_KEYWORD, 2);
-    ASSERT_TOKEN_EQUALS(result->tokens[ 8], ")",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[ 9], ";",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[10], "i",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[11], "j",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[12], "k",   NOT_A_KEYWORD, 1);
-    ASSERT_TOKEN_EQUALS(result->tokens[13], ":",   NOT_A_KEYWORD, 1);
+    ASSERT_TOKEN_EQUALS(result->tokens[ 0], "a",   IDENTIFIER,        1);
+    ASSERT_TOKEN_EQUALS(result->tokens[ 1], "b",   IDENTIFIER,        1);
+    ASSERT_TOKEN_EQUALS(result->tokens[ 2], "c",   IDENTIFIER,        1);
+    ASSERT_TOKEN_EQUALS(result->tokens[ 3], "[",   SPECIAL_CHARACTER, 1);
+    ASSERT_TOKEN_EQUALS(result->tokens[ 4], "def", IDENTIFIER   ,     3);
+    ASSERT_TOKEN_EQUALS(result->tokens[ 5], "]",   SPECIAL_CHARACTER, 1);
+    ASSERT_TOKEN_EQUALS(result->tokens[ 6], "(",   SPECIAL_CHARACTER, 1);
+    ASSERT_TOKEN_EQUALS(result->tokens[ 7], "gh",  IDENTIFIER,        2);
+    ASSERT_TOKEN_EQUALS(result->tokens[ 8], ")",   SPECIAL_CHARACTER, 1);
+    ASSERT_TOKEN_EQUALS(result->tokens[ 9], ";",   SPECIAL_CHARACTER, 1);
+    ASSERT_TOKEN_EQUALS(result->tokens[10], "i",   IDENTIFIER,        1);
+    ASSERT_TOKEN_EQUALS(result->tokens[11], "j",   IDENTIFIER,        1);
+    ASSERT_TOKEN_EQUALS(result->tokens[12], "k",   IDENTIFIER,        1);
+    ASSERT_TOKEN_EQUALS(result->tokens[13], ":",   SPECIAL_CHARACTER, 1);
 
     destroy_token_list(result);
 }    
