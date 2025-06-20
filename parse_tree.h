@@ -28,7 +28,7 @@ typedef struct ptn {
     // NULL if it cannot be created yet
     char* regex;
 
-} parse_tree_node;
+} parse_tree:wq:q_node;
 
 /*
     Parse tree representation of the RegLang expression

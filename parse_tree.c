@@ -37,7 +37,21 @@ parse_tree_node *get_expression(token_list *list, int *starting_index) {
     Returns true if the given token list represents a valid expr_start
  */
 parse_tree_node *get_expr_start(token_list *list, int *starting_index) {
-    return false;
+    
+    // Save the starting index, so we can restore if it we fail to make this node
+    int original_starting_index = *starting_index;
+
+    // Value that will be returned
+    parse_tree_node *node = (parse_tree_node *)malloc(sizeof(parse_tree_node));
+
+    // If the first token in the list is a literal string, then this is a valid expr_start node
+    if (list->tokens[*starting_index].type == LITERAL_STRING) {
+        node->children = NULL; 
+    }
+
+    // If we fail to make a expr_start node, clean up and return NULL
+    free(node);
+    return NULL;
 }
 
 /*
