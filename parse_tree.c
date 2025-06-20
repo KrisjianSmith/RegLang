@@ -39,54 +39,6 @@ parse_tree_node *get_expression(token_list *list, int *starting_index) {
 parse_tree_node *get_expr_start(token_list *list, int *starting_index) {
     return false;
 }
-/*
-    Returns true if the given token list represents a valid string
- */
-bool is_string(token_list *list, int starting_index) {
-
-    // Get the next token's string representation
-    char *str = list->tokens[starting_index].str;
-    int len = list->tokens[starting_index].len;
-
-    return (str[0] == '\"' && str[len - 1] == '\"');
-}
-
-/*
-    Returns true if the given token list represents a valid identifier
- */
-bool is_identifier(token_list *list, int starting_index) {
-    
-    // If the token is a keyword, then it cannot be an identifier
-    if (list->tokens[starting_index].type != NOT_A_KEYWORD) {
-        return false;
-    }
-
-    // Get the next token's string representation
-    char *str = list->tokens[starting_index].str;
-    int len = list->tokens[starting_index].len;   
-
-    // The first character must be a letter or underscore
-    if ( !( ('a' <= str[0] && str[0] <= 'z') ||
-            ('A' <= str[0] && str[0] <= 'Z') ||
-            str[0] == '_')
-          ) {
-        return false;
-    }
-
-    // All other characters must be alphanumeric
-    for (int i = 1; i < len; i++) {
-        if ( !( ('a' <= str[0] && str[0] <= 'z') ||
-                ('A' <= str[0] && str[0] <= 'Z') ||
-                ('0' <= str[0] && str[0] <= '9') ||
-                str[0] == '_')
-              ) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 
 /*
     Creates a parse tree from the given token list. The caller must eventually

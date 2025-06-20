@@ -21,7 +21,7 @@ typedef enum {
     READING_STRING,
     END_OF_STRING,
     ESCAPE,
-    AFTER_SINGLE_CHAR_TOKEN
+    AFTER_SPECIAL_CHAR_TOKEN
 } fsm_state;
 
 /*
@@ -45,7 +45,7 @@ bool is_whitespace(char c) {
     These tokens need to be handled separately, as they are allowed to exist
     without surrounding whitespace, unlike other tokens
  */
-bool is_single_char_token(char c) {
+bool is_special_char_token(char c) {
     switch (c) {
         case '[':
         case ']':
@@ -79,7 +79,7 @@ void fail(char *msg) {
           the entire RegLang expression, meaning that it is not null terminated.
     Returns the keyword_type enumeration of the given keyword
  */
-keyword_type get_keyword_type(const char *str, int len) {
+token_type get_keyword_type(const char *str, int len) {
     
     // List of all keywords
     char keywords[][16] = {
@@ -104,7 +104,7 @@ keyword_type get_keyword_type(const char *str, int len) {
     };
     
     // List of all corresponding keyword enumeration values
-    keyword_type types[] = {
+    token_type types[] = {
         KEYWORD_FOLLOWED,
         KEYWORD_BY,
         KEYWORD_REPEATED,
@@ -132,9 +132,31 @@ keyword_type get_keyword_type(const char *str, int len) {
             return types[i];
         }
     }
+
+    // If the token is not a keyword, check if it is an identifier
+    // The first character must be a letter or underscore. If it is not, then
+    // this is not an identifier
+    if ( !( ('a' <= str[0] && str[0] <= 'z') ||
+            ('A' <= str[0] && str[0] <= 'Z') ||
+            str[0] == '_')
+          ) {
+        return UNKNOWN_TOKEN;
+    }
+
+    // All other characters must be alphanumeric. If any one is not, then this
+    // is not an identifier
+    for (int i = 1; i < len; i++) {
+        if ( !( ('a' <= str[0] && str[0] <= 'z') ||
+                ('A' <= str[0] && str[0] <= 'Z') ||
+                ('0' <= str[0] && str[0] <= '9') ||
+                str[0] == '_')
+              ) {
+            return UNKNOWN_TOKEN;
+        }
+    }
     
-    // If no match is found, return NOT_A_KEYWORD 
-    return NOT_A_KEYWORD;
+    // If the above test pass, this is a valid identifier
+    return IDENTIFIER;
 }
 
 /*
@@ -148,7 +170,7 @@ keyword_type get_keyword_type(const char *str, int len) {
     Note that the added token will be malloc'd. This will be freed when the
     token list is destroyed.
  */
-void add_string(token_list *list, const char *str, int len) {
+void add_token(token_list *list, const char *str, int len) {
     
     // If there is no more space in the array, double it's size
     if (list->len == list->capacity) {
@@ -165,6 +187,72 @@ void add_string(token_list *list, const char *str, int len) {
     t->str[len] = '\0';
     t->len = len;
     t->type = get_keyword_type(str, len);
+
+    // Update the length of the token list
+    list->len++;
+}
+
+/*
+    Adds the given special character to the token list
+
+    list - the list to add the token to
+    c - the special character to add
+
+    Note that the added token will be malloc'd. This will be freed when the
+    token list is destroyed.
+ */
+void add_special_char(token_list *list, char c) {
+    
+    // If there is no more space in the array, double it's size
+    if (list->len == list->capacity) {
+        list->capacity *= 2;
+        list->tokens = (token *)realloc(list->tokens, sizeof(token) * list->capacity);
+    }
+    
+    // Get the reference to the next token
+    token *t = list->tokens + list->len;
+    
+    // Allocate space for the token's string and copy the contents
+    t->str = (char *)malloc(sizeof(char) * 2);
+    t->str[0] = c;
+    t->str[1] = '\0';
+    t->len = 1;
+    t->type = SPECIAL_CHARACTER;
+
+    // Update the length of the token list
+    list->len++;
+}
+
+/*
+    Adds the given string to the given token_list as a literal string.
+    Discards the quotations. Grows the list's internal array if necessary.
+
+    list - the list to add the token to
+    str - a pointer to the start of the string
+    len - the length of the token
+
+    Note that the added token will be malloc'd. This will be freed when the
+    token list is destroyed.
+ */
+void add_literal_string(token_list *list, const char *str, int len) {
+    
+    // If there is no more space in the array, double it's size
+    if (list->len == list->capacity) {
+        list->capacity *= 2;
+        list->tokens = (token *)realloc(list->tokens, sizeof(token) * list->capacity);
+    }
+    
+    // Get the reference to the next token
+    token *t = list->tokens + list->len;
+    
+    // Allocate space for the token's string and copy the contents
+    // Note that we allocate space for a string 2 characters shorter, since we
+    // discard the quotation marks at the beginning and end of this string.
+    t->str = (char *)malloc(sizeof(char) * (len - 1));
+    strncpy(t->str, str + 1, len - 2);
+    t->str[len - 1] = '\0';
+    t->len = len - 2;
+    t->type = LITERAL_STRING;
 
     // Update the length of the token list
     list->len++;
@@ -198,7 +286,7 @@ void destroy_token_list(token_list* list) {
         The
         quick
         brown
-        "fox jumped over \"the lazy\" dog"
+        fox jumped over "the lazy" dog
 
     Inputs:
         str - The string to scan
@@ -241,9 +329,9 @@ token_list *tokenize(const char *str) {
                 }
 
                 // If we find a single character token, record it and move on
-                if (is_single_char_token(str[index])) {
-                    add_string(list, &str[index], 1);
-                    state = AFTER_SINGLE_CHAR_TOKEN;
+                if (is_special_char_token(str[index])) {
+                    add_special_char(list, str[index]);
+                    state = AFTER_SPECIAL_CHAR_TOKEN;
                     break;
                 }
 
@@ -267,17 +355,17 @@ token_list *tokenize(const char *str) {
                 
                 // If we found a single character token, record the previous token and
                 // the single character token in the list
-                if (is_single_char_token(str[index])) {
+                if (is_special_char_token(str[index])) {
 
                     // Add the token to the list
                     int len = index - starting_index;
-                    add_string(list, &str[starting_index], len);
+                    add_token(list, &str[starting_index], len);
 
                     // Add the single character token to the list
-                    add_string(list, &str[index], 1);
+                    add_special_char(list, str[index]);
 
                     // Set the state and move on
-                    state = AFTER_SINGLE_CHAR_TOKEN;
+                    state = AFTER_SPECIAL_CHAR_TOKEN;
                     break;
                 }
 
@@ -290,7 +378,7 @@ token_list *tokenize(const char *str) {
                     
                     // Add the token to the list
                     int len = index - starting_index;
-                    add_string(list, &str[starting_index], len);
+                    add_token(list, &str[starting_index], len);
 
                     // Change state
                     state = SKIPPING_WHITESPACE;
@@ -334,27 +422,27 @@ token_list *tokenize(const char *str) {
                     
                     // Add the string to the list of tokens
                     int len = index - starting_index;
-                    add_string(list, &str[starting_index], len);
+                    add_literal_string(list, &str[starting_index], len);
                     state = SKIPPING_WHITESPACE;
                 }
-                else if (is_single_char_token(str[index])) {
+                else if (is_special_char_token(str[index])) {
                      
                     // Add the string to the list of tokens
                     int len = index - starting_index;
-                    add_string(list, &str[starting_index], len);
+                    add_literal_string(list, &str[starting_index], len);
                     
                     // Add the single character token
-                    add_string(list, &str[index], 1);
-                    state = AFTER_SINGLE_CHAR_TOKEN;
+                    add_special_char(list, str[index]);
+                    state = AFTER_SPECIAL_CHAR_TOKEN;
                 }
                 else {
                     destroy_token_list(list);
                     fail("Improperly formatted input. Quoted string ended with no whitespace after it.");
-                    return NULL;
+                return NULL;
                 }
             break;
 
-            case AFTER_SINGLE_CHAR_TOKEN:
+            case AFTER_SPECIAL_CHAR_TOKEN:
                 
                 // If there is whitespace, ignore it
                 if (is_whitespace(str[index])) {
@@ -370,9 +458,9 @@ token_list *tokenize(const char *str) {
                 }
 
                 // If there is another single character token, record it
-                if (is_single_char_token(str[index])) {
-                    add_string(list, &str[index], 1);
-                    state = AFTER_SINGLE_CHAR_TOKEN;
+                if (is_special_char_token(str[index])) {
+                    add_special_char(list, str[index]);
+                    state = AFTER_SPECIAL_CHAR_TOKEN;
                     break;
                 }
 
@@ -397,15 +485,20 @@ token_list *tokenize(const char *str) {
 
     // If we were reading whitespace or had just read a single character token,
     // then this token doesn't exist and we can return immediately
-    if (state == SKIPPING_WHITESPACE || state == AFTER_SINGLE_CHAR_TOKEN) {
+    if (state == SKIPPING_WHITESPACE || state == AFTER_SPECIAL_CHAR_TOKEN) {
         return list;
     }
 
     // If we were reading a token or had just finished reading a quoted string, then
     // this token or quoted string needs to be added to the list. We can then return.
-    if (state == READING_TOKEN || state == END_OF_STRING) {
+    if (state == READING_TOKEN) {
         int len = index - starting_index;
-        add_string(list, &str[starting_index], len);
+        add_token(list, &str[starting_index], len);
+        return list;
+    }
+    if (state == END_OF_STRING) {
+        int len = index - starting_index;
+        add_literal_string(list, &str[starting_index], len);
         return list;
     }
 
